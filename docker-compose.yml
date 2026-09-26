@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: praxislink-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-praxislink}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-praxislink}
+      POSTGRES_DB: ${DB_NAME:-praxislink}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - praxislink_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-praxislink}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  praxislink_db_data:

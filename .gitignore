@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+*.log
+
+# Archivos subidos por los usuarios (fotos, logos, CVs)
+backend/uploads/*
+!backend/uploads/avatars/.gitkeep
+!backend/uploads/logos/.gitkeep
+!backend/uploads/cvs/.gitkeep
+backend/public/
+*.tsbuildinfo
