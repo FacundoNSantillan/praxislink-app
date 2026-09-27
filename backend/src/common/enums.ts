@@ -2,6 +2,7 @@ export enum UserRole {
   EMPRESA = "empresa",
   ESTUDIANTE = "estudiante",
   UNIVERSIDAD = "universidad",
+  ADMIN = "admin",
 }
 
 export enum OfferType {

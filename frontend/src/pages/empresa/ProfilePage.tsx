@@ -3,6 +3,7 @@ import { api, fileUrl } from "../../api/client";
 import { PageHeader } from "../../components/AppShell";
 import { useToast } from "../../components/Toast";
 import type { CompanyProfile } from "../../types";
+import { isValidSite } from "../../utils/validation";
 
 function initials(name: string) {
   return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
@@ -13,6 +14,7 @@ export function EmpresaProfilePage() {
   const [profile, setProfile] = useState<CompanyProfile | null>(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: "", rubro: "", site: "", size: "", description: "" });
+  const [formError, setFormError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -29,7 +31,20 @@ export function EmpresaProfilePage() {
   }, []);
 
   async function save() {
-    const { data } = await api.patch<CompanyProfile>("/companies/me", form);
+    setFormError(null);
+    if (!form.name.trim()) {
+      setFormError("El nombre de la empresa no puede estar vacío.");
+      return;
+    }
+    if (form.site.trim() && !isValidSite(form.site)) {
+      setFormError("El sitio web no parece una dirección válida (ej: vantiasoftware.com.ar).");
+      return;
+    }
+    const { data } = await api.patch<CompanyProfile>("/companies/me", {
+      ...form,
+      name: form.name.trim(),
+      site: form.site.trim(),
+    });
     setProfile(data);
     setEditing(false);
     showToast("Perfil de empresa actualizado.");
@@ -84,6 +99,7 @@ export function EmpresaProfilePage() {
 
           {editing ? (
             <div className="table-wrap" style={{ padding: 24, boxShadow: "var(--shadow)" }}>
+              {formError && <div className="auth-error">{formError}</div>}
               <div className="form-grid">
                 <div className="field">
                   <label>Nombre de la empresa</label>
@@ -95,7 +111,7 @@ export function EmpresaProfilePage() {
                 </div>
                 <div className="field">
                   <label>Sitio web</label>
-                  <input value={form.site} onChange={(e) => setForm((f) => ({ ...f, site: e.target.value }))} />
+                  <input value={form.site} onChange={(e) => setForm((f) => ({ ...f, site: e.target.value }))} placeholder="vantiasoftware.com.ar" />
                 </div>
                 <div className="field">
                   <label>Tamaño</label>

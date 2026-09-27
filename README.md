@@ -51,20 +51,46 @@ npm run dev             # http://localhost:5173
 
 Abrí `http://localhost:5173`, creá una cuenta (Empresa, Estudiante o Universidad) y probá el flujo.
 
-### Cuentas de prueba ya cargadas
+### Cargar datos de prueba
 
-Si no querés registrarte de cero, estas cuentas ya existen en la base con datos de ejemplo:
+```bash
+cd backend
+node scripts/seed-demo-data.js
+```
 
-| Rol         | Email              | Contraseña |
-|-------------|---------------------|------------|
-| Empresa     | empresa@test.com    | 123456     |
-| Estudiante  | ana@test.com         | 123456     |
-| Universidad | uni@test.com         | 123456     |
+Crea (o reutiliza si ya existen) un set variado de cuentas — 3 universidades,
+5 empresas y 7 estudiantes con habilidades distintas —, publica ofertas,
+genera postulaciones con estados distintos (Nuevo, En revisión, Entrevista,
+Contratado, Rechazado), convenios entre universidades y empresas, y deja dos
+cuentas con un plan pago activo. Todas usan la contraseña **123456**:
+
+| Rol | Cuentas |
+|---|---|
+| Empresa | empresa@test.com (Vantia Software), nortit@test.com (NortIT Consulting), deltalogica@test.com (Deltalógica), coral@test.com (Coral Studio), rumbonorte@test.com (Rumbo Norte Logística) |
+| Estudiante | ana@test.com, martina@test.com, bruno@test.com, camila@test.com, sofia@test.com, diego@test.com, lucas@test.com |
+| Universidad | uni@test.com (UTN FRT), unt@test.com (UNT), siglo21@test.com (Siglo 21) |
+
+### Cuenta de administrador
+
+El rol de administrador no se autoregistra (por seguridad, `/auth/register`
+rechaza `role: "admin"`). Se crea con un script aparte:
+
+```bash
+cd backend
+node scripts/create-admin.js admin@praxislink.com admin123456
+```
+
+Si el email ya existe, el script le resetea la contraseña. Con esa cuenta
+entrás a `/admin`: un panel con estadísticas generales (usuarios, ofertas,
+postulaciones, convenios, facturación estimada) y el listado completo de
+usuarios de la plataforma con su plan actual.
 
 ## Cómo funciona lo importante
 
 - **Login/registro**: JWT real, contraseñas hasheadas con bcrypt. Cada rol (empresa,
-  estudiante, universidad) tiene su propio perfil y sus propias pantallas.
+  estudiante, universidad, administrador) tiene su propio perfil y sus propias pantallas.
+  Los formularios de registro, publicar oferta y edición de perfil validan de verdad
+  (formato de email, largo mínimo, campos obligatorios) antes de mandar nada al servidor.
 - **Matching de postulaciones**: al subir el CV en PDF, el backend le extrae el texto
   (`pdf-parse`) y detecta ahí mismo palabras clave conocidas — tecnologías, herramientas,
   idiomas, habilidades blandas (`backend/src/applications/cv-keywords.ts`) —, no solo lo

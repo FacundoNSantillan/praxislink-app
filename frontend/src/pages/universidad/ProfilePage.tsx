@@ -13,6 +13,7 @@ export function UniversidadProfilePage() {
   const [profile, setProfile] = useState<UniversityProfile | null>(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ name: "", location: "", description: "" });
+  const [formError, setFormError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -23,7 +24,20 @@ export function UniversidadProfilePage() {
   }, []);
 
   async function save() {
-    const { data } = await api.patch<UniversityProfile>("/universities/me", form);
+    setFormError(null);
+    if (!form.name.trim()) {
+      setFormError("El nombre de la universidad no puede estar vacío.");
+      return;
+    }
+    if (!form.location.trim()) {
+      setFormError("Ingresá la ubicación de la universidad.");
+      return;
+    }
+    const { data } = await api.patch<UniversityProfile>("/universities/me", {
+      ...form,
+      name: form.name.trim(),
+      location: form.location.trim(),
+    });
     setProfile(data);
     setEditing(false);
     showToast("Perfil de universidad actualizado.");
@@ -78,6 +92,7 @@ export function UniversidadProfilePage() {
 
           {editing ? (
             <div className="table-wrap" style={{ padding: 24, boxShadow: "var(--shadow)" }}>
+              {formError && <div className="auth-error">{formError}</div>}
               <div className="form-grid">
                 <div className="field">
                   <label>Nombre de la universidad</label>

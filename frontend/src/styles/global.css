@@ -192,6 +192,8 @@ button { font: inherit; }
 }
 .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 80px; }
+.field input.invalid, .field select.invalid, .field textarea.invalid { border-color: var(--st-crit); }
+.field-error { color: var(--st-crit); font-size: .78rem; margin-top: 4px; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
 .form-grid .span-2 { grid-column: 1 / -1; }
 @media (max-width: 640px) {

@@ -16,6 +16,7 @@ import { MyApplicationsPage } from "./pages/estudiante/MyApplicationsPage";
 import { AgreementsPage } from "./pages/universidad/AgreementsPage";
 import { StudentsPage } from "./pages/universidad/StudentsPage";
 import { UniversidadProfilePage } from "./pages/universidad/ProfilePage";
+import { AdminPage } from "./pages/admin/AdminPage";
 import { IconGrid, IconPlus, IconPeople, IconBuilding, IconUser, IconSearch, IconList, IconCap, IconCard } from "./components/icons";
 
 function HomeRedirect() {
@@ -96,6 +97,17 @@ function AppRoutes() {
         <Route path="alumnos" element={<StudentsPage />} />
         <Route path="perfil" element={<UniversidadProfilePage />} />
         <Route path="plan" element={<PlanPage />} />
+      </Route>
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute role="admin">
+            <AppShell roleLabel="administrador" navItems={[{ to: "/admin", label: "Panel", icon: <IconGrid /> }]} />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<AdminPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

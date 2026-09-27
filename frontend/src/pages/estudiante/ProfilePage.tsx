@@ -30,6 +30,16 @@ export function EstudianteProfilePage() {
   async function addSkill() {
     const value = skillInput.trim();
     if (!value || !profile) return;
+    if (value.length > 40) {
+      showToast("Esa habilidad es demasiado larga, probá resumirla.");
+      return;
+    }
+    const alreadyExists = profile.skills.some((s) => s.toLowerCase() === value.toLowerCase());
+    if (alreadyExists) {
+      showToast("Esa habilidad ya está en tu lista.");
+      setSkillInput("");
+      return;
+    }
     await patch({ skills: [...profile.skills, value] });
     setSkillInput("");
   }

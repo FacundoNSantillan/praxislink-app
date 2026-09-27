@@ -1,4 +1,4 @@
-export type UserRole = "empresa" | "estudiante" | "universidad";
+export type UserRole = "empresa" | "estudiante" | "universidad" | "admin";
 
 export interface AuthUser {
   id: string;
@@ -107,4 +107,25 @@ export interface Subscription {
   planId: string;
   status: "activa" | "cancelada";
   startedAt: string | null;
+}
+
+export interface AdminUserRow {
+  id: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+  name: string;
+  extra: string;
+  plan: { name: string; priceArs: number } | null;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalOffers: number;
+  activeOffers: number;
+  totalApplications: number;
+  totalAgreements: number;
+  monthlyRevenue: number;
+  payingAccounts: number;
+  usersByRole: { role: UserRole; count: number }[];
 }

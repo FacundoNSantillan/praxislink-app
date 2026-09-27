@@ -4,6 +4,7 @@ import { PageHeader } from "../../components/AppShell";
 import { Pill } from "../../components/Pill";
 import { useToast } from "../../components/Toast";
 import type { Offer } from "../../types";
+import { hasErrors, minLength, required, type FieldErrors } from "../../utils/validation";
 
 const AREAS = ["Sistemas y Producto", "Comercial y Marketing", "Talent & Placement", "Administración y Legal", "Operaciones"];
 const TYPES = ["PPS", "Pasantía", "Primer empleo"];
@@ -24,6 +25,7 @@ export function PublishOfferPage() {
   const { showToast } = useToast();
   const [offers, setOffers] = useState<Offer[]>([]);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -37,13 +39,42 @@ export function PublishOfferPage() {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
+  function validate(): FieldErrors {
+    const errors: FieldErrors = {};
+    const titleError = required(form.title, "Ingresá el título del puesto.");
+    if (titleError) errors.title = titleError;
+    else if (!minLength(form.title, 4)) errors.title = "Usá un título un poco más descriptivo (mínimo 4 caracteres).";
+
+    const locationError = required(form.location, "Ingresá la ubicación.");
+    if (locationError) errors.location = locationError;
+
+    if (!Number.isInteger(form.vacancies) || form.vacancies < 1) {
+      errors.vacancies = "Tiene que ser un número entero de 1 o más.";
+    }
+
+    const descriptionError = required(form.description, "Contá de qué se trata el puesto.");
+    if (descriptionError) errors.description = descriptionError;
+    else if (!minLength(form.description, 20)) errors.description = "Agregá un poco más de detalle (mínimo 20 caracteres).";
+
+    const requirementsError = required(form.requirements, "Contá qué requisitos pedís.");
+    if (requirementsError) errors.requirements = requirementsError;
+    else if (!minLength(form.requirements, 10)) errors.requirements = "Agregá un poco más de detalle (mínimo 10 caracteres).";
+
+    return errors;
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    const errors = validate();
+    setFieldErrors(errors);
+    if (hasErrors(errors)) return;
+
     setSubmitting(true);
     try {
-      await api.post("/offers", form);
+      await api.post("/offers", { ...form, title: form.title.trim(), location: form.location.trim() });
       setForm(EMPTY_FORM);
+      setFieldErrors({});
       loadOffers();
       showToast("Oferta publicada: ya está visible en la búsqueda de estudiantes.");
     } catch (err) {
@@ -71,11 +102,18 @@ export function PublishOfferPage() {
         <div className="view-section">
           <div className="table-wrap" style={{ boxShadow: "var(--shadow)", padding: "26px 28px" }}>
             {error && <div className="auth-error">{error}</div>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} noValidate>
               <div className="form-grid">
                 <div className="field span-2">
                   <label htmlFor="title">Título del puesto</label>
-                  <input id="title" required value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Ej: Analista de Sistemas Jr." />
+                  <input
+                    id="title"
+                    className={fieldErrors.title ? "invalid" : ""}
+                    value={form.title}
+                    onChange={(e) => update("title", e.target.value)}
+                    placeholder="Ej: Analista de Sistemas Jr."
+                  />
+                  {fieldErrors.title && <p className="field-error">{fieldErrors.title}</p>}
                 </div>
                 <div className="field">
                   <label htmlFor="area">Área</label>
@@ -103,7 +141,14 @@ export function PublishOfferPage() {
                 </div>
                 <div className="field">
                   <label htmlFor="location">Ubicación</label>
-                  <input id="location" required value={form.location} onChange={(e) => update("location", e.target.value)} placeholder="San Miguel de Tucumán" />
+                  <input
+                    id="location"
+                    className={fieldErrors.location ? "invalid" : ""}
+                    value={form.location}
+                    onChange={(e) => update("location", e.target.value)}
+                    placeholder="San Miguel de Tucumán"
+                  />
+                  {fieldErrors.location && <p className="field-error">{fieldErrors.location}</p>}
                 </div>
                 <div className="field span-2">
                   <label htmlFor="vacancies">Vacantes</label>
@@ -111,30 +156,33 @@ export function PublishOfferPage() {
                     id="vacancies"
                     type="number"
                     min={1}
-                    required
+                    className={fieldErrors.vacancies ? "invalid" : ""}
                     value={form.vacancies}
                     onChange={(e) => update("vacancies", Number(e.target.value))}
                   />
+                  {fieldErrors.vacancies && <p className="field-error">{fieldErrors.vacancies}</p>}
                 </div>
                 <div className="field span-2">
                   <label htmlFor="description">Descripción</label>
                   <textarea
                     id="description"
-                    required
+                    className={fieldErrors.description ? "invalid" : ""}
                     value={form.description}
                     onChange={(e) => update("description", e.target.value)}
                     placeholder="Contá de qué se trata el puesto y qué va a hacer la persona seleccionada."
                   />
+                  {fieldErrors.description && <p className="field-error">{fieldErrors.description}</p>}
                 </div>
                 <div className="field span-2">
                   <label htmlFor="requirements">Requisitos</label>
                   <textarea
                     id="requirements"
-                    required
+                    className={fieldErrors.requirements ? "invalid" : ""}
                     value={form.requirements}
                     onChange={(e) => update("requirements", e.target.value)}
                     placeholder="Ej: 3er año en adelante de Ingeniería en Sistemas, conocimientos de SQL."
                   />
+                  {fieldErrors.requirements && <p className="field-error">{fieldErrors.requirements}</p>}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22 }}>
